@@ -396,15 +396,10 @@ FunctionEnd
 Section "SlimeVR Server" SEC_SERVER
     SectionIn RO
 
+    DetailPrint "Installing SlimeVR Server..."
+    SetOutPath "${SLIMETEMP}"
+    File "offline-files\SlimeVR-win64.zip"
     SetOutPath $INSTDIR
-
-    DetailPrint "Downloading SlimeVR Server..."
-    NScurl::http GET "https://github.com/SlimeVR/SlimeVR-Server/releases/latest/download/SlimeVR-win64.zip" "${SLIMETEMP}\SlimeVR-win64.zip" /CANCEL /RESUME /END
-    Pop $0 ; Status text ("OK" for success)
-    ${If} $0 != "OK"
-        Abort "Failed to download SlimeVR Server. Reason: $0."
-    ${EndIf}
-    DetailPrint "Downloaded!"
 
     nsisunz::Unzip "${SLIMETEMP}\SlimeVR-win64.zip" "${SLIMETEMP}\SlimeVR\"
     Pop $0
@@ -434,10 +429,11 @@ Section "Webview2" SEC_WEBVIEW
     SectionIn RO
 
     # Read Only protects it from Installing when it is not needed
-    DetailPrint "Downloading webview2!"
-    NScurl::http GET "https://go.microsoft.com/fwlink/p/?LinkId=2124703" "${SLIMETEMP}\MicrosoftEdgeWebView2RuntimeInstaller.exe" /CANCEL /RESUME /END
-
     DetailPrint "Installing webview2!"
+    SetOutPath "${SLIMETEMP}"
+    File "offline-files\MicrosoftEdgeWebView2RuntimeInstaller.exe"
+    SetOutPath $INSTDIR
+
     nsExec::ExecToLog '"${SLIMETEMP}\MicrosoftEdgeWebView2RuntimeInstaller.exe" /silent /install' $0
     Pop $0
     DetailPrint "Installing finished with $0."
@@ -450,14 +446,10 @@ SectionEnd
 Section "Java JRE" SEC_JRE
     SectionIn RO
     
-    DetailPrint "Downloading Java JRE ${JREVersion}..."
-    NScurl::http GET "${JREDownloadURL}" "${SLIMETEMP}\${JREDownloadedFileZip}" /CANCEL /RESUME /END
-    
-    Pop $0 ; Status text ("OK" for success)
-    ${If} $0 != "OK"
-        Abort "Failed to download Java JRE ${JREVersion}. Reason: $0."
-    ${EndIf}
-    DetailPrint "Downloaded!"
+    DetailPrint "Installing Java JRE ${JREVersion}..."
+    SetOutPath "${SLIMETEMP}"
+    File "offline-files\${JREDownloadedFileZip}"
+    SetOutPath $INSTDIR
 
     # Make sure to delete all files on a update from jre, so if there is a new version no old files are left.
     IfFileExists "$INSTDIR\jre" 0 SEC_JRE_DIRNOTFOUND
@@ -482,17 +474,12 @@ Section "Java JRE" SEC_JRE
 SectionEnd
 
 Section "SteamVR Driver" SEC_VRDRIVER
+    DetailPrint "Installing SteamVR Driver..."
+    SetOutPath "${SLIMETEMP}"
+    File "offline-files\slimevr-openvr-driver-win64.zip"
     SetOutPath $INSTDIR
 
-    DetailPrint "Downloading SteamVR Driver..."
-    NScurl::http GET "https://github.com/SlimeVR/SlimeVR-OpenVR-Driver/releases/latest/download/slimevr-openvr-driver-win64.zip" "${SLIMETEMP}\slimevr-openvr-driver-win64.zip" /CANCEL /RESUME /END
-    Pop $0 ; Status text ("OK" for success)
-    ${If} $0 != "OK"
-        Abort "Failed to download SteamVR Driver. Reason: $0."
-    ${EndIf}
-    DetailPrint "Downloaded!"
-
-    DetailPrint "Unpacking downloaded files..."
+    DetailPrint "Unpacking files..."
     nsisunz::Unzip "${SLIMETEMP}\slimevr-openvr-driver-win64.zip" "${SLIMETEMP}\slimevr-openvr-driver-win64\"
     Pop $0
     DetailPrint "Unzipping finished with $0."
@@ -517,17 +504,12 @@ Section "SteamVR Driver" SEC_VRDRIVER
 SectionEnd
 
 Section "SlimeVR Feeder App" SEC_FEEDER_APP
+    DetailPrint "Installing SlimeVR Feeder App..."
+    SetOutPath "${SLIMETEMP}"
+    File "offline-files\SlimeVR-Feeder-App-win64.zip"
     SetOutPath $INSTDIR
 
-    DetailPrint "Downloading SlimeVR Feeder App..."
-    NScurl::http GET "https://github.com/SlimeVR/SlimeVR-Feeder-App/releases/latest/download/SlimeVR-Feeder-App-win64.zip" "${SLIMETEMP}\SlimeVR-Feeder-App-win64.zip" /CANCEL /RESUME /END
-    Pop $0 ; Status text ("OK" for success)
-    ${If} $0 != "OK"
-        Abort "Failed to download SlimeVR Feeder App. Reason: $0."
-    ${EndIf}
-    DetailPrint "Downloaded!"
-
-    DetailPrint "Unpacking downloaded files..."
+    DetailPrint "Unpacking files..."
     nsisunz::Unzip "${SLIMETEMP}\SlimeVR-Feeder-App-win64.zip" "${SLIMETEMP}"
     Pop $0
     DetailPrint "Unzipping finished with $0."
@@ -540,14 +522,10 @@ Section "SlimeVR Feeder App" SEC_FEEDER_APP
 SectionEnd
 
 Section "Microsoft Visual C++ Redistributable" SEC_MSVCPP
+    SetOutPath "${SLIMETEMP}"
+    DetailPrint "Installing Microsoft Visual C++ Redistributable..."
+    File "offline-files\vc_redist.x64.exe"
     SetOutPath $INSTDIR
-    DetailPrint "Downloading Microsoft Visual C++ Redistributable..."
-    NScurl::http GET "https://aka.ms/vs/17/release/vc_redist.x64.exe" "${SLIMETEMP}\vc_redist.x64.exe" /CANCEL /RESUME /END
-    Pop $0 ; Status text ("OK" for success)
-    ${If} $0 != "OK"
-        Abort "Failed to download Microsoft Visual C++ Redistributable. Reason: $0."
-    ${EndIf}
-    DetailPrint "Downloaded!"
     DetailPrint "Installing Microsoft Visual C++ Redistributable..."
     nsExec::ExecToLog '"${SLIMETEMP}\vc_redist.x64.exe" /install /passive /norestart' $0
     Pop $0 ; Status text ("OK" for success)
@@ -829,8 +807,8 @@ Section "-un." un.SEC_POST_UNINSTALL
 SectionEnd
 
 LangString DESC_SEC_SERVER ${LANG_ENGLISH} "Installs latest SlimeVR Server."
-LangString DESC_SEC_JRE ${LANG_ENGLISH} "Downloads and copies Java JRE 17 to installation folder. Required for SlimeVR Server."
-LangString DESC_SEC_WEBVIEW ${LANG_ENGLISH} "Downloads and install Webview2 if not already installed. Required for the SlimeVR GUI"
+LangString DESC_SEC_JRE ${LANG_ENGLISH} "Copies Java JRE 17 to installation folder. Required for SlimeVR Server."
+LangString DESC_SEC_WEBVIEW ${LANG_ENGLISH} "Installs Webview2 if not already installed. Required for the SlimeVR GUI"
 LangString DESC_SEC_VRDRIVER ${LANG_ENGLISH} "Installs latest SteamVR Driver for SlimeVR."
 LangString DESC_SEC_USBDRIVERS ${LANG_ENGLISH} "A list of USB drivers that are used by various boards."
 LangString DESC_SEC_FEEDER_APP ${LANG_ENGLISH} "Installs SlimeVR Feeder App that sends position of SteamVR trackers (Vive trackers, controllers) to SlimeVR Server. Required for elbow tracking."
