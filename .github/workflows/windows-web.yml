@@ -6,6 +6,9 @@ on:
   push:
     branches:
       - main
+      - offline-progressive
+      - offline-progressive-j21
+      - old-jserialcomm
   pull_request:
   workflow_dispatch:
 
