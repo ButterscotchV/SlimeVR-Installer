@@ -87,7 +87,7 @@ $DriverFile = Join-Path $DriverVerDir "slimevr-openvr-driver-win64.zip"
 $FeederFile = Join-Path $FeederVerDir "SlimeVR-Feeder-App-win64.zip"
 $VcredistFile = Join-Path $VcredistDir "vc_redist.x64.exe"
 
-$ServerUrl = "https://github.com/SlimeVR/SlimeVR-Server/releases/download/$ServerVersion/SlimeVR-win64.zip"
+$ServerUrl = "https://github.com/ButterscotchV/SlimeVR-Server/releases/download/$ServerVersion/SlimeVR-win64.zip"
 $WebView2Url = "https://go.microsoft.com/fwlink/p/?LinkId=2124703"
 $JavaUrl = "https://github.com/adoptium/temurin${JavaMajorVersion}-binaries/releases/download/jdk-$($JavaVersion -Replace "\+", "%2B")/$JavaFileName"
 $DriverUrl = "https://github.com/SlimeVR/SlimeVR-OpenVR-Driver/releases/download/$DriverVersion/slimevr-openvr-driver-win64.zip"
