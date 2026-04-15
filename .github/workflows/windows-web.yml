@@ -11,29 +11,41 @@ jobs:
     env:
       # The directory of the web installer project
       WINDOWS_WEB_DIR: ${{ github.workspace }}/windows/web
+      WINDOWS_COMPONENT_CACHE_DIR: ${{ github.workspace }}/windows/web/component-cache
+      GH_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
         with:
           submodules: recursive
+
+      - name: Restore cached offline installer files
+        uses: actions/cache@v5
+        with:
+          path: ${{ env.WINDOWS_COMPONENT_CACHE_DIR }}
+          key: ${{ runner.os }}-${{ hashFiles('**/download_components.ps1') }}
+          restore-keys: ${{ runner.os }}-
+
+      - name: Download offline installer files
+        run: ."${{ env.WINDOWS_WEB_DIR }}/download_components.ps1"
+        shell: pwsh
+
       - name: Create NSIS installer
         uses: joncloud/makensis-action@v5.0
         with:
           script-file: ${{ env.WINDOWS_WEB_DIR }}/slimevr_web_installer.nsi
 
+      - name: Compute installer hashes
+        run: ."${{ env.WINDOWS_WEB_DIR }}/manifest-hashes.ps1"
+        shell: pwsh
+
       - name: Upload the installer as a build artifact
         uses: actions/upload-artifact@v6
         with:
           # Artifact name
-          name: "slimevr_web_installer" # optional, default is artifact
+          name: "slimevr_offline_installer" # optional, default is artifact
           # A file, directory or wildcard pattern that describes what to upload
-          path: ${{ env.WINDOWS_WEB_DIR }}/slimevr_web_installer.exe
-
-      - name: Upload to draft release
-        uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          draft: true
-          generate_release_notes: true
-          files: "${{ env.WINDOWS_WEB_DIR }}/slimevr_web_installer.exe"
+          path: |
+            ${{ env.WINDOWS_WEB_DIR }}/slimevr_*_offline_installer.exe
+            ${{ env.WINDOWS_WEB_DIR }}/slimevr_*_offline_installer.txt
